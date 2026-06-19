@@ -1,0 +1,64 @@
+# ============================
+# Python / FastAPI Backend
+# ============================
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.pyc
+backend/.env
+backend/chroma_db/
+backend/.pytest_cache/
+*.egg-info/
+.Python
+build/
+dist/
+
+# ============================
+# ChromaDB / Vector store
+# ============================
+**/chroma_db/
+**/*.sqlite3
+
+# ============================
+# Flutter / Dart
+# ============================
+flutter_app/.dart_tool/
+flutter_app/.flutter-plugins
+flutter_app/.flutter-plugins-dependencies
+flutter_app/.packages
+flutter_app/.pub-cache/
+flutter_app/.pub/
+flutter_app/build/
+flutter_app/android/.gradle/
+flutter_app/android/captures/
+flutter_app/android/gradlew
+flutter_app/android/gradlew.bat
+flutter_app/android/local.properties
+flutter_app/android/**/GeneratedPluginRegistrant.java
+flutter_app/ios/Flutter/Generated.xcconfig
+flutter_app/ios/Flutter/flutter_export_environment.sh
+flutter_app/ios/Pods/
+flutter_app/ios/.symlinks/
+flutter_app/ios/Runner.xcworkspace/
+flutter_app/**/*.g.dart
+flutter_app/**/*.freezed.dart
+
+# ============================
+# IDE / Editor
+# ============================
+.vscode/
+.idea/
+*.iml
+*.swp
+*.DS_Store
+
+# ============================
+# OS files
+# ============================
+Thumbs.db
+desktop.ini
+
+# ============================
+# Logs
+# ============================
+*.log
