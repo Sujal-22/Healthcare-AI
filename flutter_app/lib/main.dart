@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'screens/chat_screen.dart';
+import 'services/theme_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -8,7 +10,12 @@ void main() {
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
   ));
-  runApp(const HealthAIApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const HealthAIApp(),
+    ),
+  );
 }
 
 class HealthAIApp extends StatelessWidget {
@@ -16,28 +23,28 @@ class HealthAIApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
     return MaterialApp(
       title: 'HealthAI Assistant',
       debugShowCheckedModeBanner: false,
       theme: _buildTheme(Brightness.light),
       darkTheme: _buildTheme(Brightness.dark),
-      themeMode: ThemeMode.system,
+      themeMode: themeProvider.themeMode,
       home: const ChatScreen(),
     );
   }
 
   ThemeData _buildTheme(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
-    // Primary teal palette matching the HTML design
-    const primary        = Color(0xFF00685F);
-    const primaryDark    = Color(0xFF6BD8CB);
+    const primary = Color(0xFF00685F);
+    const primaryDark = Color(0xFF10A37F);
     const primaryContainer = Color(0xFF008378);
-    const surface        = Color(0xFFF7F9FB);
-    const surfaceDark    = Color(0xFF191C1E);
-    const onSurface      = Color(0xFF191C1E);
-    const onSurfaceDark  = Color(0xFFE0E3E5);
-    const outline        = Color(0xFF6D7A77);
-    const outlineVariant = Color(0xFFBCC9C6);
+    const surface = Color(0xFFF7F9FB);
+    const surfaceDark = Color(0xFF212121);
+    const onSurface = Color(0xFF191C1E);
+    const onSurfaceDark = Color.fromARGB(255, 15, 14, 14);
+    const outline = Color(0xFF6D7A77);
+    const outlineVariant = Color(0xFF3A3A3A);
 
     return ThemeData(
       useMaterial3: true,
@@ -62,7 +69,8 @@ class HealthAIApp extends StatelessWidget {
         onErrorContainer: const Color(0xFF93000A),
         surface: isDark ? surfaceDark : surface,
         onSurface: isDark ? onSurfaceDark : onSurface,
-        surfaceContainerHighest: isDark ? const Color(0xFF2D3133) : const Color(0xFFE0E3E5),
+        surfaceContainerHighest:
+            isDark ? const Color(0xFF2D3133) : const Color(0xFFE0E3E5),
         outline: outline,
         outlineVariant: outlineVariant,
       ),
@@ -79,14 +87,16 @@ class HealthAIApp extends StatelessWidget {
           borderSide: BorderSide.none,
         ),
         filled: true,
-        fillColor: isDark ? const Color(0xFF2D3133) : Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        fillColor: isDark ? const Color(0xFF303030) : Colors.white,
+        hintStyle: TextStyle(color: isDark ? const Color(0xFFB4B4B4): Colors.black54),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       ),
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: outlineVariant.withValues(alpha: 0.6)),
+          side: BorderSide(color : isDark ? const Color(0xFF3A3A3A) : outlineVariant.withValues(alpha: 0.6)),
         ),
         color: isDark ? const Color(0xFF2D3133) : Colors.white,
       ),

@@ -3,9 +3,17 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    # Ollama
+    # ── LLM Provider switch ──
+    # "ollama" = local dev (laptop) | "groq" = free cloud deployment
+    llm_provider: str = "ollama"
+
+    # Ollama (local dev)
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "gemma2:2b"
+
+    # Groq (free cloud — used when llm_provider=groq)
+    groq_api_key: str = ""
+    groq_model: str = "llama-3.1-8b-instant"
 
     # Embeddings
     embedding_model: str = "all-MiniLM-L6-v2"

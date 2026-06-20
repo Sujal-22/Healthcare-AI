@@ -4,6 +4,8 @@ import '../models/message.dart';
 import '../services/chat_service.dart';
 import '../widgets/message_bubble.dart';
 import '../widgets/typing_indicator.dart';
+import 'package:provider/provider.dart';
+import '../services/theme_provider.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -113,44 +115,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   });
 
-  // ── Settings bottom sheet ──
-  void _openSettings() => showModalBottomSheet(
-    context: context,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-    ),
-    builder: (_) => _SettingsSheet(
-      onIngest: (force) async {
-        Navigator.pop(context);
-        await _doIngest(force);
-      },
-      onRefresh: () async {
-        Navigator.pop(context);
-        await _checkHealth();
-      },
-    ),
-  );
-
-  Future<void> _doIngest(bool force) async {
-    setState(() {
-      _statusText = '⏳ Loading health data…';
-      _statusOk = false;
-    });
-    try {
-      final r = await _chatService.ingestData(forceReload: force);
-      setState(() {
-        _statusText =
-        'Loaded ${r['files_processed']} files · ${r['chunks_stored']} chunks';
-        _statusOk = true;
-      });
-    } catch (e) {
-      setState(() {
-        _statusText = 'Ingest failed: $e';
-        _statusOk = false;
-      });
-    }
-  }
-
   @override
   void dispose() {
     _chatService.dispose();
@@ -240,12 +204,16 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               const SizedBox(width: 8),
               IconButton(
-                icon: const Icon(Icons.settings_outlined,
-                    color: Colors.white, size: 22),
-                onPressed: _openSettings,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
+                icon: Icon(
+                  context.watch<ThemeProvider>().isDarkMode? Icons.light_mode_outlined
+                  : Icons.dark_mode_outlined,
+                  color: Colors.white,
+                  size: 22,),
+                  onPressed: () =>
+                  context.read<ThemeProvider>().toggleTheme(),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  ),
             ],
           ),
         ),
@@ -390,100 +358,89 @@ class _ChatScreenState extends State<ChatScreen> {
 
   // ── Input bar ──
   Widget _buildInputBar(ColorScheme cs) => Container(
-    padding: EdgeInsets.fromLTRB(
-        16, 10, 16, MediaQuery.of(context).padding.bottom + 12),
-    decoration: BoxDecoration(
-      color: cs.surface.withValues(alpha: 0.9),
-      border: Border(
-          top: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.4))),
-      boxShadow: [
-        BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, -2))
-      ],
-    ),
-    child: Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: cs.outlineVariant),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2))
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          const SizedBox(width: 4),
-          IconButton(
-            icon: Icon(Icons.attach_file_rounded,
-                color: cs.outline, size: 20),
-            onPressed: () {},
-            tooltip: 'Attach file',
+        padding: EdgeInsets.fromLTRB(
+            16, 10, 16, MediaQuery.of(context).padding.bottom + 12),
+        decoration: BoxDecoration(
+          color: cs.surface.withValues(alpha: 0.9),
+          border: Border(
+              top: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.4))),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 12,
+                offset: const Offset(0, -2))
+          ],
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: cs.outlineVariant),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2))
+            ],
           ),
-          Expanded(
-            child: TextField(
-              controller: _inputCtrl,
-              onSubmitted: (_) => _send(),
-              maxLines: 4,
-              minLines: 1,
-              textInputAction: TextInputAction.send,
-              style: TextStyle(
-                  color: cs.onSurface, fontSize: 15, height: 1.5),
-              decoration: InputDecoration(
-                hintText: 'Ask about symptoms, conditions…',
-                hintStyle:
-                TextStyle(color: cs.outline, fontSize: 15),
-                border: InputBorder.none,
-                filled: false,
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 0, vertical: 13),
-              ),
-            ),
-          ),
-          const SizedBox(width: 4),
-          Padding(
-            padding: const EdgeInsets.all(4),
-            child: GestureDetector(
-              onTap: _isLoading ? null : _send,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: _isLoading
-                      ? cs.primary.withValues(alpha: 0.4)
-                      : cs.primary,
-                  borderRadius: BorderRadius.circular(22),
-                  boxShadow: _isLoading
-                      ? []
-                      : [
-                    BoxShadow(
-                        color: cs.primary.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3))
-                  ],
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _inputCtrl,
+                  onSubmitted: (_) => _send(),
+                  maxLines: 4,
+                  minLines: 1,
+                  textInputAction: TextInputAction.send,
+                  style:
+                      TextStyle(color: cs.onSurface, fontSize: 15, height: 1.5),
+                  decoration: InputDecoration(
+                    hintText: 'Ask about symptoms, conditions…',
+                    hintStyle: TextStyle(color: cs.outline, fontSize: 15),
+                    border: InputBorder.none,
+                    filled: false,
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 13),
+                  ),
                 ),
-                child: _isLoading
-                    ? const Padding(
-                  padding: EdgeInsets.all(12),
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white),
-                )
-                    : const Icon(Icons.send_rounded,
-                    color: Colors.white, size: 20),
               ),
-            ),
+              Padding(
+                padding: const EdgeInsets.all(4),
+                child: GestureDetector(
+                  onTap: _isLoading ? null : _send,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color:
+                          _isLoading ? cs.primary.withValues(alpha: 0.4) : cs.primary,
+                      borderRadius: BorderRadius.circular(22),
+                      boxShadow: _isLoading
+                          ? []
+                          : [
+                              BoxShadow(
+                                  color: cs.primary.withValues(alpha: 0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3))
+                            ],
+                    ),
+                    child: _isLoading
+                        ? const Padding(
+                            padding: EdgeInsets.all(12),
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Icon(Icons.send_rounded,
+                            color: Colors.white, size: 20),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    ),
-  );
+        ),
+      );
 }
 
 // ── Bento card widget ──
@@ -596,90 +553,3 @@ class _BentoCardState extends State<_BentoCard> {
   }
 }
 
-// ── Settings bottom sheet ──
-class _SettingsSheet extends StatelessWidget {
-  final Function(bool) onIngest;
-  final VoidCallback onRefresh;
-  const _SettingsSheet({required this.onIngest, required this.onRefresh});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 36,
-            height: 4,
-            decoration: BoxDecoration(
-              color: cs.outlineVariant,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text('Settings',
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: cs.onSurface)),
-          const SizedBox(height: 20),
-          _tile(context, Icons.upload_file_outlined, 'Load Health Data',
-              'Ingest TXT/CSV from data/ folder', () => onIngest(false)),
-          const SizedBox(height: 8),
-          _tile(context, Icons.refresh_rounded, 'Reload All Data',
-              'Force re-ingest everything', () => onIngest(true)),
-          const SizedBox(height: 8),
-          _tile(context, Icons.health_and_safety_outlined, 'Check Connection',
-              'Ping backend + Ollama', onRefresh),
-        ],
-      ),
-    );
-  }
-
-  Widget _tile(BuildContext context, IconData icon, String title,
-      String subtitle, VoidCallback onTap) {
-    final cs = Theme.of(context).colorScheme;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: cs.surfaceContainerHighest.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.4)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: cs.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: cs.primary, size: 20),
-            ),
-            const SizedBox(width: 14),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: cs.onSurface)),
-                Text(subtitle,
-                    style: TextStyle(fontSize: 12, color: cs.outline)),
-              ],
-            ),
-            const Spacer(),
-            Icon(Icons.chevron_right, color: cs.outline, size: 18),
-          ],
-        ),
-      ),
-    );
-  }
-}
